@@ -6,3 +6,342 @@
 100/300
 120/300
 140/300
+160/300
+180/300
+200/300
+220/300
+240/300
+260/300
+280/300
+                                                snr   corr  pattern_err
+jitter_ms n_epochs snr_in method                                       
+0         100      -20    AJD-cosp           -4.748  0.679        0.399
+                          AJD-cov            -5.146  0.045        0.612
+                          BAJD               -5.544  0.027        0.603
+                          BAJD-spatial      -12.359  0.106          NaN
+                          CAJD-cosp          -4.859  0.101        0.572
+                          CAJD-cosp-spatial -11.985  0.093          NaN
+                          CAJD-cov           -4.727  0.155        0.540
+                          CAJD-cov-spatial  -11.659  0.176          NaN
+                          average            -6.158  0.413          NaN
+                          raw               -20.106  0.423          NaN
+                          xDAWN               3.147  0.868        0.268
+                   -15    AJD-cosp            4.739  0.839        0.233
+                          AJD-cov             7.296  0.868        0.128
+                          BAJD                1.697  0.717        0.271
+                          BAJD-spatial       -5.957  0.641          NaN
+                          CAJD-cosp           1.956  0.828        0.228
+                          CAJD-cosp-spatial  -5.003  0.754          NaN
+                          CAJD-cov            1.949  0.764        0.267
+                          CAJD-cov-spatial   -5.470  0.678          NaN
+                          average            -1.361  0.587          NaN
+                          raw               -15.106  0.596          NaN
+                          xDAWN               8.210  0.955        0.224
+                   -10    AJD-cosp            9.082  0.950        0.171
+                          AJD-cov            12.463  0.973        0.026
+                          BAJD               10.709  0.959        0.114
+                          BAJD-spatial       10.764  0.960          NaN
+                          CAJD-cosp          10.300  0.968        0.131
+                          CAJD-cosp-spatial  10.634  0.969          NaN
+                          CAJD-cov           12.417  0.971        0.094
+                          CAJD-cov-spatial   11.732  0.973          NaN
+                          average             3.219  0.775          NaN
+                          raw               -10.106  0.764          NaN
+                          xDAWN              13.065  0.986        0.200
+                   -5     AJD-cosp           13.305  0.988        0.153
+                          AJD-cov            16.307  0.990        0.013
+                          BAJD               14.143  0.988        0.150
+                          BAJD-spatial       16.710  0.990          NaN
+                          CAJD-cosp          14.250  0.991        0.152
+                          CAJD-cosp-spatial  15.628  0.992          NaN
+                          CAJD-cov           16.545  0.994        0.046
+                          CAJD-cov-spatial   17.186  0.995          NaN
+                          average             7.090  0.900          NaN
+                          raw                -5.106  0.888          NaN
+                          xDAWN              17.472  0.995        0.194
+                    0     AJD-cosp           14.595  0.995        0.155
+                          AJD-cov            19.257  0.996        0.009
+                          BAJD               15.625  0.995        0.157
+                          BAJD-spatial       21.869  0.997          NaN
+                          CAJD-cosp          15.120  0.997        0.147
+                          CAJD-cosp-spatial  19.793  0.998          NaN
+                          CAJD-cov           21.600  0.998        0.010
+                          CAJD-cov-spatial   21.722  0.999          NaN
+                          average             9.395  0.959          NaN
+                          raw                -0.106  0.951          NaN
+                          xDAWN              20.913  0.998        0.190
+          200      -20    AJD-cosp           -1.414  0.772        0.244
+                          AJD-cov             3.996  0.806        0.167
+                          BAJD               -4.221  0.591        0.349
+                          BAJD-spatial      -10.723  0.493          NaN
+                          CAJD-cosp           0.212  0.794        0.234
+                          CAJD-cosp-spatial  -3.763  0.788          NaN
+                          CAJD-cov           -3.119  0.735        0.263
+                          CAJD-cov-spatial   -9.228  0.718          NaN
+                          average            -2.658  0.527          NaN
+                          raw               -20.069  0.521          NaN
+                          xDAWN               5.003  0.931        0.251
+                   -15    AJD-cosp           10.021  0.954        0.200
+                          AJD-cov            10.890  0.958        0.041
+                          BAJD                9.124  0.920        0.095
+                          BAJD-spatial        7.119  0.921          NaN
+                          CAJD-cosp           9.809  0.945        0.120
+                          CAJD-cosp-spatial   8.188  0.945          NaN
+                          CAJD-cov            9.563  0.933        0.110
+                          CAJD-cov-spatial    7.799  0.935          NaN
+                          average             1.962  0.720          NaN
+                          raw               -15.069  0.711          NaN
+                          xDAWN              10.344  0.976        0.160
+                   -10    AJD-cosp           13.440  0.987        0.164
+                          AJD-cov            15.939  0.987        0.018
+                          BAJD               13.272  0.988        0.094
+                          BAJD-spatial       12.993  0.988          NaN
+                          CAJD-cosp          12.607  0.985        0.126
+                          CAJD-cosp-spatial  12.275  0.985          NaN
+                          CAJD-cov           14.135  0.983        0.081
+                          CAJD-cov-spatial   13.370  0.983          NaN
+                          average             5.947  0.858          NaN
+                          raw               -10.069  0.858          NaN
+                          xDAWN              15.327  0.992        0.162
+                   -5     AJD-cosp           14.640  0.996        0.163
+                          AJD-cov            19.691  0.996        0.010
+                          BAJD               15.043  0.996        0.123
+                          BAJD-spatial       18.083  0.996          NaN
+                          CAJD-cosp          14.433  0.997        0.152
+                          CAJD-cosp-spatial  16.423  0.996          NaN
+                          CAJD-cov           19.183  0.996        0.022
+                          CAJD-cov-spatial   18.534  0.996          NaN
+                          average             8.894  0.936          NaN
+                          raw                -5.069  0.935          NaN
+                          xDAWN              19.830  0.998        0.162
+                    0     AJD-cosp           15.072  0.999        0.163
+                          AJD-cov            21.504  0.999        0.007
+                          BAJD               16.017  0.999        0.128
+                          BAJD-spatial       23.094  0.999          NaN
+                          CAJD-cosp          15.076  0.999        0.160
+                          CAJD-cosp-spatial  20.603  0.999          NaN
+                          CAJD-cov           23.245  0.999        0.007
+                          CAJD-cov-spatial   22.754  0.999          NaN
+                          average            10.410  0.974          NaN
+                          raw                -0.069  0.975          NaN
+                          xDAWN              23.605  0.999        0.161
+          400      -20    AJD-cosp            8.434  0.913        0.244
+                          AJD-cov             9.328  0.914        0.055
+                          BAJD                6.248  0.926        0.159
+                          BAJD-spatial        2.705  0.889          NaN
+                          CAJD-cosp           5.239  0.897        0.151
+                          CAJD-cosp-spatial   1.759  0.868          NaN
+                          CAJD-cov            7.009  0.920        0.145
+                          CAJD-cov-spatial    3.750  0.921          NaN
+                          average             0.440  0.647          NaN
+                          raw               -19.975  0.644          NaN
+                          xDAWN               6.543  0.961        0.257
+                   -15    AJD-cosp           11.916  0.982        0.168
+                          AJD-cov            14.500  0.974        0.024
+                          BAJD               12.342  0.981        0.118
+                          BAJD-spatial        9.995  0.980          NaN
+                          CAJD-cosp          11.595  0.980        0.128
+                          CAJD-cosp-spatial   9.461  0.980          NaN
+                          CAJD-cov           12.171  0.979        0.113
+                          CAJD-cov-spatial   10.198  0.979          NaN
+                          average             4.684  0.803          NaN
+                          raw               -14.975  0.819          NaN
+                          xDAWN              11.669  0.988        0.146
+                   -10    AJD-cosp           13.933  0.995        0.161
+                          AJD-cov            18.489  0.994        0.012
+                          BAJD               14.541  0.992        0.128
+                          BAJD-spatial       15.515  0.992          NaN
+                          CAJD-cosp          13.590  0.994        0.128
+                          CAJD-cosp-spatial  14.323  0.994          NaN
+                          CAJD-cov           14.985  0.995        0.094
+                          CAJD-cov-spatial   16.166  0.994          NaN
+                          average             7.812  0.903          NaN
+                          raw                -9.975  0.915          NaN
+                          xDAWN              16.654  0.996        0.147
+                   -5     AJD-cosp           14.425  0.999        0.162
+                          AJD-cov            21.843  0.998        0.007
+                          BAJD               15.562  0.997        0.137
+                          BAJD-spatial       20.550  0.997          NaN
+                          CAJD-cosp          14.226  0.998        0.128
+                          CAJD-cosp-spatial  18.405  0.998          NaN
+                          CAJD-cov           19.245  0.998        0.029
+                          CAJD-cov-spatial   20.776  0.998          NaN
+                          average             9.652  0.960          NaN
+                          raw                -4.975  0.963          NaN
+                          xDAWN              21.050  0.999        0.136
+                    0     AJD-cosp           14.594  0.999        0.164
+                          AJD-cov            23.659  0.999        0.006
+                          BAJD               15.967  0.999        0.145
+                          BAJD-spatial       25.569  0.999          NaN
+                          CAJD-cosp          14.542  0.999        0.128
+                          CAJD-cosp-spatial  21.680  0.999          NaN
+                          CAJD-cov           24.998  1.000        0.006
+                          CAJD-cov-spatial   24.255  1.000          NaN
+                          average            10.467  0.986          NaN
+                          raw                 0.025  0.987          NaN
+                          xDAWN              25.223  1.000        0.132
+25        100      -20    AJD-cosp           -5.103  0.633        0.404
+                          AJD-cov            -4.326  0.163        0.598
+                          BAJD               -4.570  0.130        0.532
+                          BAJD-spatial      -12.722  0.215          NaN
+                          CAJD-cosp          -5.563  0.052        0.609
+                          CAJD-cosp-spatial -11.946  0.062          NaN
+                          CAJD-cov           -5.324  0.133        0.553
+                          CAJD-cov-spatial  -11.350  0.170          NaN
+                          average            -6.221  0.397          NaN
+                          raw               -20.106  0.409          NaN
+                          xDAWN               2.498  0.850        0.277
+                   -15    AJD-cosp            3.299  0.835        0.242
+                          AJD-cov             1.182  0.710        0.306
+                          BAJD                0.595  0.647        0.290
+                          BAJD-spatial       -5.082  0.586          NaN
+                          CAJD-cosp           1.104  0.791        0.252
+                          CAJD-cosp-spatial  -5.084  0.731          NaN
+                          CAJD-cov            0.916  0.734        0.276
+                          CAJD-cov-spatial   -5.273  0.650          NaN
+                          average            -1.562  0.570          NaN
+                          raw               -15.106  0.580          NaN
+                          xDAWN               7.574  0.946        0.241
+                   -10    AJD-cosp            7.484  0.954        0.167
+                          AJD-cov             8.658  0.949        0.031
+                          BAJD                7.797  0.956        0.105
+                          BAJD-spatial       10.203  0.958          NaN
+                          CAJD-cosp           8.231  0.966        0.137
+                          CAJD-cosp-spatial   9.997  0.969          NaN
+                          CAJD-cov            9.135  0.967        0.118
+                          CAJD-cov-spatial   11.415  0.971          NaN
+                          average             2.673  0.755          NaN
+                          raw               -10.106  0.750          NaN
+                          xDAWN              12.351  0.983        0.189
+                   -5     AJD-cosp            8.903  0.985        0.152
+                          AJD-cov            10.111  0.977        0.013
+                          BAJD                9.430  0.985        0.136
+                          BAJD-spatial       15.476  0.988          NaN
+                          CAJD-cosp           9.091  0.990        0.148
+                          CAJD-cosp-spatial  15.287  0.993          NaN
+                          CAJD-cov           10.425  0.991        0.042
+                          CAJD-cov-spatial   17.155  0.994          NaN
+                          average             5.740  0.888          NaN
+                          raw                -5.106  0.880          NaN
+                          xDAWN              16.645  0.994        0.199
+                    0     AJD-cosp            9.224  0.993        0.154
+                          AJD-cov            10.577  0.991        0.008
+                          BAJD                9.833  0.993        0.155
+                          BAJD-spatial       20.990  0.996          NaN
+                          CAJD-cosp           9.289  0.995        0.150
+                          CAJD-cosp-spatial  19.733  0.998          NaN
+                          CAJD-cov           11.156  0.996        0.010
+                          CAJD-cov-spatial   21.032  0.999          NaN
+                          average             7.196  0.955          NaN
+                          raw                -0.106  0.947          NaN
+                          xDAWN              20.192  0.998        0.207
+          200      -20    AJD-cosp           -1.620  0.787        0.247
+                          AJD-cov             2.001  0.797        0.215
+                          BAJD               -4.369  0.585        0.360
+                          BAJD-spatial      -10.562  0.470          NaN
+                          CAJD-cosp          -3.501  0.670        0.263
+                          CAJD-cosp-spatial  -8.917  0.648          NaN
+                          CAJD-cov           -3.041  0.647        0.306
+                          CAJD-cov-spatial   -9.261  0.585          NaN
+                          average            -2.857  0.498          NaN
+                          raw               -20.069  0.498          NaN
+                          xDAWN               4.772  0.919        0.216
+                   -15    AJD-cosp            6.872  0.961        0.200
+                          AJD-cov             7.890  0.943        0.037
+                          BAJD                6.622  0.876        0.142
+                          BAJD-spatial        6.661  0.882          NaN
+                          CAJD-cosp           6.359  0.887        0.129
+                          CAJD-cosp-spatial   6.590  0.889          NaN
+                          CAJD-cov            6.914  0.886        0.120
+                          CAJD-cov-spatial    7.532  0.888          NaN
+                          average             1.411  0.693          NaN
+                          raw               -15.069  0.688          NaN
+                          xDAWN               9.983  0.966        0.164
+                   -10    AJD-cosp            8.782  0.985        0.165
+                          AJD-cov             9.514  0.979        0.018
+                          BAJD                8.399  0.970        0.121
+                          BAJD-spatial       12.117  0.973          NaN
+                          CAJD-cosp           8.469  0.974        0.134
+                          CAJD-cosp-spatial  12.091  0.983          NaN
+                          CAJD-cov            9.218  0.977        0.053
+                          CAJD-cov-spatial   13.090  0.981          NaN
+                          average             4.739  0.841          NaN
+                          raw               -10.069  0.841          NaN
+                          xDAWN              14.897  0.991        0.201
+                   -5     AJD-cosp            9.139  0.992        0.164
+                          AJD-cov            10.189  0.990        0.010
+                          BAJD                9.362  0.989        0.109
+                          BAJD-spatial       17.392  0.995          NaN
+                          CAJD-cosp           9.036  0.993        0.125
+                          CAJD-cosp-spatial  16.098  0.996          NaN
+                          CAJD-cov            9.989  0.991        0.023
+                          CAJD-cov-spatial   18.120  0.996          NaN
+                          average             6.726  0.924          NaN
+                          raw                -5.069  0.928          NaN
+                          xDAWN              19.426  0.997        0.169
+                    0     AJD-cosp            9.248  0.996        0.164
+                          AJD-cov            10.411  0.995        0.007
+                          BAJD                9.547  0.995        0.110
+                          BAJD-spatial       21.806  0.998          NaN
+                          CAJD-cosp           9.274  0.996        0.138
+                          CAJD-cosp-spatial  19.992  0.999          NaN
+                          CAJD-cov           10.360  0.997        0.007
+                          CAJD-cov-spatial   22.543  0.999          NaN
+                          average             7.662  0.965          NaN
+                          raw                -0.069  0.972          NaN
+                          xDAWN              23.070  0.999        0.166
+          400      -20    AJD-cosp            5.702  0.915        0.248
+                          AJD-cov             7.038  0.891        0.071
+                          BAJD               -0.738  0.809        0.206
+                          BAJD-spatial       -9.672  0.767          NaN
+                          CAJD-cosp           2.009  0.851        0.216
+                          CAJD-cosp-spatial  -3.204  0.810          NaN
+                          CAJD-cov            2.082  0.887        0.184
+                          CAJD-cov-spatial   -3.044  0.839          NaN
+                          average             0.134  0.624          NaN
+                          raw               -19.975  0.627          NaN
+                          xDAWN               6.224  0.950        0.250
+                   -15    AJD-cosp            7.788  0.983        0.167
+                          AJD-cov             9.623  0.973        0.022
+                          BAJD                8.859  0.978        0.118
+                          BAJD-spatial        9.325  0.979          NaN
+                          CAJD-cosp           8.176  0.975        0.133
+                          CAJD-cosp-spatial   9.053  0.976          NaN
+                          CAJD-cov            8.571  0.975        0.116
+                          CAJD-cov-spatial   10.229  0.976          NaN
+                          average             3.816  0.789          NaN
+                          raw               -14.975  0.804          NaN
+                          xDAWN              11.361  0.985        0.181
+                   -10    AJD-cosp            8.633  0.994        0.160
+                          AJD-cov            10.485  0.992        0.011
+                          BAJD                9.307  0.992        0.124
+                          BAJD-spatial       14.419  0.992          NaN
+                          CAJD-cosp           9.248  0.993        0.129
+                          CAJD-cosp-spatial  13.546  0.994          NaN
+                          CAJD-cov            9.442  0.993        0.088
+                          CAJD-cov-spatial   15.797  0.994          NaN
+                          average             6.214  0.893          NaN
+                          raw                -9.975  0.906          NaN
+                          xDAWN              16.316  0.995        0.187
+                   -5     AJD-cosp            8.833  0.998        0.161
+                          AJD-cov            10.872  0.998        0.007
+                          BAJD                9.694  0.996        0.129
+                          BAJD-spatial       19.875  0.997          NaN
+                          CAJD-cosp           9.071  0.997        0.127
+                          CAJD-cosp-spatial  17.973  0.998          NaN
+                          CAJD-cov           10.372  0.998        0.026
+                          CAJD-cov-spatial   20.934  0.999          NaN
+                          average             7.418  0.954          NaN
+                          raw                -4.975  0.959          NaN
+                          xDAWN              20.715  0.999        0.183
+                    0     AJD-cosp            8.900  0.999        0.162
+                          AJD-cov            11.000  0.999        0.006
+                          BAJD                9.876  0.998        0.133
+                          BAJD-spatial       24.249  0.999          NaN
+                          CAJD-cosp           8.867  0.999        0.127
+                          CAJD-cosp-spatial  20.939  1.000          NaN
+                          CAJD-cov           10.935  0.999        0.006
+                          CAJD-cov-spatial   24.298  1.000          NaN
+                          average             7.883  0.983          NaN
+                          raw                 0.025  0.985          NaN
+                          xDAWN              24.663  1.000        0.177
