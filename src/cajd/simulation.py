@@ -76,7 +76,7 @@ class SimulatedERP:
     X : (n_epochs, n_channels, n_times) observed epochs
     y : (n_epochs,) 1 = target (ERP present), 0 = non-target
     evoked : (n_epochs, n_channels, n_times) true evoked part of each epoch
-    A : (n_channels, n_channels) spatial mixing (first ``n_erp`` columns are ERP sources)
+    A : (n_channels, n_erp + n_background) spatial mixing (first ``n_erp`` columns are ERP sources)
     waveforms : (n_erp, n_times) ERP source waveforms
     amplitudes : (n_epochs, n_erp) single-trial ERP amplitudes
     latencies : (n_epochs,) single-trial latency shift in samples
@@ -127,7 +127,7 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
                      n_erp=2, snr_db=-10.0, target_ratio=0.5, amplitude_sd=0.3,
                      jitter_ms=0.0, cond_A=(1, 20), sensor_noise=0.05,
                      shared_amplitude=False, background="mixed",
-                     random_state=None):
+                     n_background=None, jitter_samples=0, random_state=None):
     """Simulate P300-like epochs: ERP sources in ongoing EEG, shared mixing A.
 
     Each epoch is ``X_k = A_erp diag(a_k) W + A_bg Z_k + noise`` where W holds
@@ -155,11 +155,22 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
         Kind of background sources: alternating oscillations and 1/f noise,
         or only one kind. Sources of the same 1/f kind share a spectrum, so
         co-spectra cannot separate them.
+    n_background : int or None
+        Number of background sources (default ``n_channels - n_erp``, a
+        square mixing). More sources than channels gives an overcomplete,
+        more realistic background that no square unmixing can separate.
+    jitter_samples : int
+        Single-trial latency shift drawn uniformly in [-jitter_samples,
+        jitter_samples] samples (added to ``jitter_ms``).
     """
     rng = check_random_state(random_state)
     N, T, K = n_channels, n_times, n_epochs
     times = np.arange(T) / sfreq
-    A = random_matrix(N, N, cond_A, rng)
+    n_bg = N - n_erp if n_background is None else n_background
+    if n_erp + n_bg == N:
+        A = random_matrix(N, N, cond_A, rng)
+    else:
+        A = rng.randn(N, n_erp + n_bg)
     A /= np.linalg.norm(A, axis=0)
 
     W = np.array([erp_waveform(times, rng) for _ in range(n_erp)])
@@ -167,13 +178,14 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
     amps = 1 + amplitude_sd * rng.randn(K, 1 if shared_amplitude else n_erp)
     amps = np.broadcast_to(amps, (K, n_erp)) * y[:, None]
     lat = np.round(rng.randn(K) * jitter_ms * sfreq / 1000).astype(int)
+    if jitter_samples:
+        lat += rng.randint(-jitter_samples, jitter_samples + 1, size=K)
 
     src = np.empty((K, n_erp, T))
     for k in range(K):
         src[k] = amps[k][:, None] * np.roll(W, lat[k], axis=1)
     evoked = np.einsum("ne,ket->knt", A[:, :n_erp], src)
 
-    n_bg = N - n_erp
     if background == "mixed":
         kinds = ["oscillation" if i % 2 == 0 else "pink" for i in range(n_bg)]
     elif background in ("oscillation", "pink"):

@@ -95,3 +95,10 @@ def test_simulation_shared_amplitude_and_background():
     assert np.allclose(s.amplitudes[:, 0], s.amplitudes[:, 1])
     with pytest.raises(ValueError):
         sim_fn(background="white")
+
+
+def test_simulation_overcomplete_background_and_sample_jitter():
+    from cajd.simulation import simulate_erp_eeg as sim_fn
+    s = sim_fn(n_channels=8, n_epochs=30, n_background=40, jitter_samples=3, random_state=0)
+    assert s.A.shape == (8, 42)
+    assert s.latencies.min() >= -3 and s.latencies.max() <= 3 and s.latencies.std() > 0

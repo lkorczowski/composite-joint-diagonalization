@@ -79,6 +79,7 @@ Main options of `CAJD`:
 - **Normalization:** each sweep normalizes the columns of B and D to unit norm (this doesn't change the path, but prevents drift), and the two sets are scaled to unit energy before fitting.
 - **Optional ground truth:** the true `A`/`E` are not needed. Track any metric with `callback`.
 - **P < N sources** are supported.
+- **Reduced temporal basis (`reduce_time=True`, default in the estimators).** The 2016 algorithm updates the T×P temporal unmixing D with planar shears, which crawls when T ≫ N: from the paper's initialization it can stall for thousands of sweeps. Solving D in the N-dimensional temporal subspace of the data converges to exact separation in a few hundred sweeps and is 10–16× more accurate on D under noise. `gpt(..., d_step='exact')` also replaces the γ shears by the closed-form optimum of each column of D. `reduce_time=False` reproduces the 2016 algorithm.
 
 ## Validation
 
