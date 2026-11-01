@@ -56,6 +56,11 @@ class CAJD(TransformerMixin, BaseEstimator):
     init : {'svd', 'identity'}
         Initialization of B and D (paper Sec. II-D).
     max_iter, tol : GPT stopping rules.
+    reduce_time : bool
+        Solve the temporal unmixing D in the N-dimensional temporal subspace
+        of the bilinear set instead of all T samples (default). This removes
+        the T - N directions the model cannot use, converges much faster and
+        is more accurate under noise; False reproduces the 2016 algorithm.
     random_state : int, RandomState or None
 
     Attributes
@@ -78,7 +83,7 @@ class CAJD(TransformerMixin, BaseEstimator):
     def __init__(self, n_components=None, alpha=0.5, bilinear="averages",
                  linear="cospectra", sfreq=None, freqs=None, n_averages=20,
                  average_size=None, init="svd", max_iter=100, tol=1e-9,
-                 random_state=None):
+                 reduce_time=True, random_state=None):
         self.n_components = n_components
         self.alpha = alpha
         self.bilinear = bilinear
@@ -90,6 +95,7 @@ class CAJD(TransformerMixin, BaseEstimator):
         self.init = init
         self.max_iter = max_iter
         self.tol = tol
+        self.reduce_time = reduce_time
         self.random_state = random_state
 
     # ------------------------------------------------------------------ sets
@@ -146,7 +152,8 @@ class CAJD(TransformerMixin, BaseEstimator):
             D = np.linalg.pinv(np.einsum("np,knt->pt", B, Xb) / len(Xb))
         else:
             res = gpt(X=Xb_n, C=C_n, B0=B0, D0=D0, alpha=self.alpha,
-                      max_iter=self.max_iter, tol=self.tol)
+                      max_iter=self.max_iter, tol=self.tol,
+                      reduce_time=self.reduce_time)
             B, D = res.B, res.D
 
         # sort components by evoked power on the bilinear set
@@ -210,11 +217,12 @@ class BAJD(CAJD):
 
     def __init__(self, n_components=None, bilinear="averages", n_averages=20,
                  average_size=None, init="svd", max_iter=100, tol=1e-9,
-                 random_state=None):
+                 reduce_time=True, random_state=None):
         super().__init__(n_components=n_components, alpha=0.0,
                          bilinear=bilinear, n_averages=n_averages,
                          average_size=average_size, init=init,
-                         max_iter=max_iter, tol=tol, random_state=random_state)
+                         max_iter=max_iter, tol=tol, reduce_time=reduce_time,
+                         random_state=random_state)
 
 
 class AJD(CAJD):

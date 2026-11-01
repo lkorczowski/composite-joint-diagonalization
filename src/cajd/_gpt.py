@@ -75,8 +75,34 @@ def _normalize_columns(B, M_rows, M_cols=()):
     return B
 
 
+def _temporal_basis(X, rank):
+    """Leading right singular vectors of the stacked observations, shape (T, rank)."""
+    T = X.shape[-1]
+    _, _, Vt = np.linalg.svd(X.reshape(-1, T), full_matrices=False)
+    return Vt[:rank].T
+
+
+def _exact_d_step(B, X, D):
+    """Optimal unit-norm columns of D for fixed B.
+
+    Column d_i minimizes sum_k sum_{j != i} (b_j^T X_k d_i)^2, i.e. it is the
+    eigenvector of the smallest eigenvalue of sum_k X_k^T B_{-i} B_{-i}^T X_k.
+    Returns the new D and the size of the change.
+    """
+    P = B.shape[1]
+    Y = np.einsum("np,knr->kpr", B, X)  # (K, P, r)
+    G = np.einsum("kpr,kps->prs", Y, Y)  # per-source contributions (P, r, r)
+    total = G.sum(axis=0)
+    D_new = np.empty_like(D)
+    for i in range(P):
+        _, v = np.linalg.eigh(total - G[i])
+        d = v[:, 0]
+        D_new[:, i] = d if np.dot(d, D[:, i]) >= 0 else -d
+    return D_new, float(np.linalg.norm(D_new - D) / np.sqrt(P))
+
+
 def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
-        normalize=True, callback=None):
+        normalize=True, d_step="jacobi", reduce_time=None, callback=None):
     """Composite approximate joint diagonalization by GPT.
 
     Minimizes
@@ -104,6 +130,17 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
         Stop when the RMS of the sweep's beta/gamma falls below ``tol``.
     normalize : bool
         Rescale the columns of B and D to unit norm after each sweep.
+    d_step : {'jacobi', 'exact'}
+        'jacobi' (paper): planar updates of D, pair by pair, like B.
+        'exact': after each sweep of B updates, set every column of D to its
+        closed-form optimum given B (smallest eigenvector of an r x r
+        matrix). Much faster from poor initializations; implies
+        ``reduce_time``.
+    reduce_time : bool or None
+        Project the observations on their N leading temporal directions
+        (the row space of ``A S_k E^T`` has dimension at most N), so that D
+        is solved in an N-dimensional basis instead of T. Default: True for
+        ``d_step='exact'``, False otherwise.
     callback : callable or None
         ``callback(B, D)`` called after each sweep; its return value is
         stored in ``history[it]['callback']``.
@@ -122,6 +159,13 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
         alpha = 0.0
     use_x = X is not None and alpha < 1.0
     use_c = C is not None and alpha > 0.0
+    if d_step not in ("jacobi", "exact"):
+        raise ValueError(f"Unknown d_step {d_step!r}.")
+    exact_d = use_x and d_step == "exact"
+    if reduce_time is None:
+        reduce_time = exact_d
+    if exact_d and not reduce_time:
+        raise ValueError("d_step='exact' requires reduce_time=True.")
 
     B = np.array(B0, dtype=float, copy=True)
     P = B.shape[1]
@@ -130,8 +174,15 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
     if use_x:
         if D0 is None:
             raise ValueError("D0 is required when X is used.")
+        X = np.asarray(X, float)
         D = np.array(D0, dtype=float, copy=True)
-        S = np.einsum("np,knt,tq->kpq", B, np.asarray(X, float), D)
+        V = None
+        if reduce_time:
+            V = _temporal_basis(X, min(X.shape[1], X.shape[2]))
+            X_full, X = X, X @ V
+            D = V.T @ D
+            D /= np.linalg.norm(D, axis=0)
+        S = np.einsum("np,knt,tq->kpq", B, X, D)
     if use_c:
         Ct = np.einsum("np,lnm,mq->lpq", B, np.asarray(C, float), B)
 
@@ -150,7 +201,7 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
     def record(it, conv):
         entry = {"it": it, "conv": conv, "cost": cost()}
         if callback is not None:
-            entry["callback"] = callback(B, D)
+            entry["callback"] = callback(B, D if not use_x or V is None else V @ D)
         history.append(entry)
 
     history = []
@@ -171,7 +222,7 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
                     num += wx * np.dot(S[:, i, j], sjj)
                     den_x = np.dot(sjj, sjj)
                     den += wx * den_x
-                    if den_x > 0:
+                    if den_x > 0 and not exact_d:
                         gamma = -np.dot(S[:, j, i], sjj) / den_x
                 if use_c:
                     cjj = Ct[:, j, j]
@@ -199,11 +250,18 @@ def gpt(X=None, C=None, B0=None, D0=None, alpha=0.5, max_iter=100, tol=1e-9,
                 _normalize_columns(D, [], [S])
 
         conv = np.sqrt(acc / max(2 * P * (P - 1), 1))
+        if exact_d:
+            D, d_change = _exact_d_step(B, X, D)
+            S = np.einsum("np,knt,tq->kpq", B, X, D)
+            conv = max(conv, d_change)
         record(it, conv)
         if conv < tol:
             converged = True
             break
 
+    if use_x and V is not None:
+        D = V @ D
+        S = np.einsum("np,knt,tq->kpq", B, X_full, D)
     return GPTResult(B=B, D=D, S=S, C=Ct, n_iter=it, converged=converged,
                      history=history)
 

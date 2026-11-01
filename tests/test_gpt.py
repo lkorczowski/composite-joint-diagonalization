@@ -85,3 +85,33 @@ def test_invalid_inputs():
         gpt(C=np.eye(3)[None], B0=np.eye(3), alpha=2.0)
     with pytest.raises(ValueError):
         gpt(X=np.ones((2, 3, 5)), B0=np.eye(3))
+
+
+@pytest.mark.parametrize("kw", [dict(reduce_time=True), dict(d_step="exact")])
+def test_reduced_time_recovers_paired_design_from_identity(kw):
+    # sources share profiles pairwise in each set: only the composite model
+    # identifies them; the 2016 Jacobi D-updates stall here (T >> N)
+    rng = np.random.RandomState(0)
+    N, T, K, L = 8, 128, 100, 100
+    A = random_matrix(N, N, cond=5.0, random_state=rng)
+    E = random_matrix(T, N, cond=5.0, random_state=rng)
+    S = rng.randn(K, N // 2)[:, np.arange(N) // 2]
+    lam = rng.chisquare(2, (L, N // 2))[:, ((np.arange(N) + 1) % N) // 2]
+    X = np.einsum("nm,km,tm->knt", A, S, E)
+    C = np.einsum("nm,lm,pm->lnp", A, lam, A)
+    X, C = X / np.linalg.norm(X), C / np.linalg.norm(C)
+    D0 = np.linalg.qr(rng.randn(T, N))[0]
+    res = cajd_gpt(X, C, np.eye(N), D0, max_iter=600, tol=1e-12, **kw)
+    assert moreau_macchi(A, res.B) < 1e-8
+    assert moreau_macchi(E, res.D) < 1e-8
+    assert res.D.shape == (T, N)
+    assert np.allclose(res.S, np.einsum("np,knt,tq->kpq", res.B, X, res.D))
+
+
+def test_exact_d_step_requires_reduced_time():
+    s = simulate_paper(n_sources=4, n_obs=10, n_sym=10, random_state=0)
+    B0, D0 = svd_init(s.X)
+    with pytest.raises(ValueError):
+        cajd_gpt(s.X, s.C, B0, D0, d_step="exact", reduce_time=False)
+    with pytest.raises(ValueError):
+        cajd_gpt(s.X, s.C, B0, D0, d_step="newton")
