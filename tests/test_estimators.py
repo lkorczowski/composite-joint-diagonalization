@@ -85,3 +85,13 @@ def test_accepts_mne_epochs(sim):
     epochs = mne.EpochsArray(sim.X, info, verbose=False)
     est = CAJD(random_state=0).fit(epochs, sim.y)  # sfreq read from info
     assert est.transform(epochs).shape == sim.X.shape
+
+
+def test_simulation_shared_amplitude_and_background():
+    from cajd.simulation import simulate_erp_eeg as sim_fn
+    s = sim_fn(n_channels=6, n_epochs=40, target_ratio=1.0, shared_amplitude=True,
+               background="oscillation", random_state=0)
+    assert s.y.all()
+    assert np.allclose(s.amplitudes[:, 0], s.amplitudes[:, 1])
+    with pytest.raises(ValueError):
+        sim_fn(background="white")

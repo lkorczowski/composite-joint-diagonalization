@@ -126,6 +126,7 @@ def background_source(n_samples, sfreq, rng, kind):
 def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
                      n_erp=2, snr_db=-10.0, target_ratio=0.5, amplitude_sd=0.3,
                      jitter_ms=0.0, cond_A=(1, 20), sensor_noise=0.05,
+                     shared_amplitude=False, background="mixed",
                      random_state=None):
     """Simulate P300-like epochs: ERP sources in ongoing EEG, shared mixing A.
 
@@ -147,6 +148,13 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
         bilinear model when > 0).
     sensor_noise : float
         Standard deviation of white sensor noise relative to the background.
+    shared_amplitude : bool
+        If True, all ERP sources share the same single-trial amplitude, so
+        the bilinear model alone cannot separate them (only their subspace).
+    background : {'mixed', 'oscillation', 'pink'}
+        Kind of background sources: alternating oscillations and 1/f noise,
+        or only one kind. Sources of the same 1/f kind share a spectrum, so
+        co-spectra cannot separate them.
     """
     rng = check_random_state(random_state)
     N, T, K = n_channels, n_times, n_epochs
@@ -156,7 +164,8 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
 
     W = np.array([erp_waveform(times, rng) for _ in range(n_erp)])
     y = (rng.rand(K) < target_ratio).astype(int)
-    amps = (1 + amplitude_sd * rng.randn(K, n_erp)) * y[:, None]
+    amps = 1 + amplitude_sd * rng.randn(K, 1 if shared_amplitude else n_erp)
+    amps = np.broadcast_to(amps, (K, n_erp)) * y[:, None]
     lat = np.round(rng.randn(K) * jitter_ms * sfreq / 1000).astype(int)
 
     src = np.empty((K, n_erp, T))
@@ -165,7 +174,12 @@ def simulate_erp_eeg(n_channels=16, n_times=128, n_epochs=200, sfreq=128.0,
     evoked = np.einsum("ne,ket->knt", A[:, :n_erp], src)
 
     n_bg = N - n_erp
-    kinds = ["oscillation" if i % 2 == 0 else "pink" for i in range(n_bg)]
+    if background == "mixed":
+        kinds = ["oscillation" if i % 2 == 0 else "pink" for i in range(n_bg)]
+    elif background in ("oscillation", "pink"):
+        kinds = [background] * n_bg
+    else:
+        raise ValueError(f"Unknown background {background!r}.")
     cont = np.array([background_source(K * T, sfreq, rng, kd) for kd in kinds])
     Z = cont.reshape(n_bg, K, T).transpose(1, 0, 2)
     background = np.einsum("nb,kbt->knt", A[:, n_erp:], Z)
