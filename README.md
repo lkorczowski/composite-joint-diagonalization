@@ -99,7 +99,7 @@ Reproduction of the paper's simulation (100 runs, N = 16, non-orthogonal `A` and
 
 ## Status
 
-Research code (0.1.0.dev0). The journal-paper plan, the literature reviews and the open methodological questions are in [`paper/`](paper/).
+Research code (0.1.0.dev0), developed alongside a journal article in preparation. First synthetic results (`experiments/synthetic_snr.py`) show that CAJD does not beat xDAWN as a single-trial denoiser when ERP sources switch on and off between classes; the conditions under which the composite model helps are being studied.
 
 ## License
 
