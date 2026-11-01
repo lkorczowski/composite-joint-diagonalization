@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cajd"
+version = "0.1.0.dev0"
+description = "Composite Approximate Joint Diagonalization: EEG/ERP source separation mixing linear and bilinear (spatio-temporal) models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+authors = [{ name = "Louis Korczowski" }]
+keywords = ["EEG", "ERP", "P300", "BCI", "blind source separation",
+            "joint diagonalization", "tensor", "denoising", "MNE", "MOABB"]
+dependencies = ["numpy>=1.24", "scipy>=1.10", "scikit-learn>=1.3"]
+
+[project.optional-dependencies]
+eeg = ["mne>=1.6", "moabb>=1.1", "pyriemann>=0.6"]
+dev = ["pytest>=8", "matplotlib>=3.7"]
+
+[project.urls]
+Paper = "https://hal.science/hal-01357245"
+"MATLAB version" = "https://github.com/lkorczowski/composite-joint-diagonalization-matlab"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cajd"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
