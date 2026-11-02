@@ -102,3 +102,32 @@ def test_simulation_overcomplete_background_and_sample_jitter():
     s = sim_fn(n_channels=8, n_epochs=30, n_background=40, jitter_samples=3, random_state=0)
     assert s.A.shape == (8, 42)
     assert s.latencies.min() >= -3 and s.latencies.max() <= 3 and s.latencies.std() > 0
+
+
+def test_shift_epochs_roundtrip_and_latency_recovery():
+    from cajd import estimate_latencies, shift_epochs
+    rng = np.random.RandomState(0)
+    t = np.arange(128)
+    wave = np.exp(-0.5 * ((t - 64) / 6.0) ** 2)
+    true = rng.randint(-4, 5, 60)
+    X = shift_epochs(np.tile(wave, (60, 1, 1)), true) + 0.2 * rng.randn(60, 1, 128)
+    assert np.allclose(shift_epochs(shift_epochs(X, true), -true)[:, :, 10:-10],
+                       X[:, :, 10:-10])
+    lat = estimate_latencies(X, np.ones((1, 1)), max_shift=6)
+    # latencies are identified up to a common offset
+    offset = np.bincount(lat - true + 20).argmax() - 20
+    assert np.mean(np.abs(lat - true - offset) <= 1) > 0.9
+    assert np.corrcoef(lat, true)[0, 1] > 0.9
+
+
+def test_cajd_latency_correction_recovers_jitter():
+    s = simulate_erp_eeg(n_channels=8, n_epochs=300, snr_db=-5, jitter_samples=5,
+                         random_state=1)
+    est = CAJD(linear="covariances", max_shift=8, random_state=0).fit(s.X, s.y)
+    tgt = s.y == 1
+    assert np.corrcoef(est.latencies_[tgt], s.latencies[tgt])[0, 1] > 0.8
+    plain = CAJD(linear="covariances", random_state=0).fit(s.X, s.y)
+    comps = list(range(s.n_erp))
+    snr_lat = snr_db(est.denoise(s.X[tgt], comps), s.evoked[tgt])
+    snr_plain = snr_db(plain.denoise(s.X[tgt], comps), s.evoked[tgt])
+    assert snr_lat > snr_plain + 2

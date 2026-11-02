@@ -9,6 +9,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_random_state
 
 from ._gpt import gpt, svd_init
+from .latency import estimate_latencies, shift_epochs
 from .stats import bootstrap_averages, covariances, cospectra
 
 
@@ -61,6 +62,18 @@ class CAJD(TransformerMixin, BaseEstimator):
         of the bilinear set instead of all T samples (default). This removes
         the T - N directions the model cannot use, converges much faster and
         is more accurate under noise; False reproduces the 2016 algorithm.
+    max_shift : int
+        Largest single-trial latency, in samples, corrected as in ACSTP
+        (Congedo et al., 2016): trials are realigned on the leave-one-out
+        average of their class, filtered by the leading components, and the
+        model is refitted on the realigned epochs. 0 (default) disables it.
+    latency_components : int
+        Number of leading components used to estimate latencies.
+    latency_classes : list or None
+        Classes whose latencies are estimated (default: the largest label,
+        i.e. targets). Other epochs are left as they are.
+    latency_refits : int
+        Alternations between latency estimation and refitting the model.
     random_state : int, RandomState or None
 
     Attributes
@@ -78,12 +91,18 @@ class CAJD(TransformerMixin, BaseEstimator):
         components are sorted by decreasing ``evoked_power_``.
     n_iter_ : int
     history_ : list of dict
+    latencies_ : ndarray of int, shape (n_epochs,)
+        Estimated latency of each training epoch (zeros if ``max_shift=0``).
+    template_ : ndarray, shape (n_channels, n_times)
+        Realigned average of the latency classes, used to estimate the
+        latencies of new epochs.
     """
 
     def __init__(self, n_components=None, alpha=0.5, bilinear="averages",
                  linear="cospectra", sfreq=None, freqs=None, n_averages=20,
                  average_size=None, init="svd", max_iter=100, tol=1e-9,
-                 reduce_time=True, random_state=None):
+                 reduce_time=True, max_shift=0, latency_components=1,
+                 latency_classes=None, latency_refits=2, random_state=None):
         self.n_components = n_components
         self.alpha = alpha
         self.bilinear = bilinear
@@ -96,6 +115,10 @@ class CAJD(TransformerMixin, BaseEstimator):
         self.max_iter = max_iter
         self.tol = tol
         self.reduce_time = reduce_time
+        self.max_shift = max_shift
+        self.latency_components = latency_components
+        self.latency_classes = latency_classes
+        self.latency_refits = latency_refits
         self.random_state = random_state
 
     # ------------------------------------------------------------------ sets
@@ -127,6 +150,26 @@ class CAJD(TransformerMixin, BaseEstimator):
         X, sfreq_data = _get_data(X)
         sfreq = self.sfreq if self.sfreq is not None else sfreq_data
         rng = check_random_state(self.random_state)
+        lat = np.zeros(len(X), int)
+        self._fit_unmixing(X, y, sfreq, rng)
+        if self.max_shift:
+            labels = np.zeros(len(X), int) if y is None else np.asarray(y)
+            classes = (self.latency_classes if self.latency_classes is not None
+                       else [labels.max()])
+            for _ in range(self.latency_refits):
+                Bl = self.filters_[:, :self.latency_components]
+                for c in classes:
+                    m = labels == c
+                    lat[m] = estimate_latencies(X[m], Bl, self.max_shift, lat[m])
+                self._fit_unmixing(shift_epochs(X, -lat), y, sfreq, rng)
+            m = np.isin(labels, classes)
+            self.template_ = shift_epochs(X[m], -lat[m]).mean(axis=0)
+        else:
+            self.template_ = X.mean(axis=0) if y is None else X[y == np.max(y)].mean(axis=0)
+        self.latencies_ = lat
+        return self
+
+    def _fit_unmixing(self, X, y, sfreq, rng):
         n_channels, n_times = X.shape[1:]
         P = self.n_components or n_channels
 
@@ -171,7 +214,6 @@ class CAJD(TransformerMixin, BaseEstimator):
         self.evoked_power_ = power[order]
         self.n_iter_ = res.n_iter
         self.history_ = res.history
-        return self
 
     # ------------------------------------------------------------- transform
     def transform(self, X):
@@ -179,12 +221,31 @@ class CAJD(TransformerMixin, BaseEstimator):
         X, _ = _get_data(X)
         return np.einsum("np,knt->kpt", self.filters_, X)
 
-    def amplitudes(self, X):
-        """Single-trial source amplitudes ``diag(B.T X_k D)``, shape (n_epochs, P)."""
+    def estimate_latencies(self, X):
+        """Latency of each epoch relative to ``template_`` (zeros if ``max_shift=0``)."""
         X, _ = _get_data(X)
+        if not self.max_shift:
+            return np.zeros(len(X), int)
+        return estimate_latencies(X, self.filters_[:, :self.latency_components],
+                                  self.max_shift, template=self.template_)
+
+    def _latencies(self, X, latencies):
+        if latencies is None:
+            return self.estimate_latencies(X)
+        return np.asarray(latencies, int)
+
+    def amplitudes(self, X, latencies=None):
+        """Single-trial source amplitudes ``diag(B.T X_k D)``, shape (n_epochs, P).
+
+        With ``max_shift > 0`` the epochs are first realigned on their
+        estimated (or given) latencies.
+        """
+        X, _ = _get_data(X)
+        if self.max_shift or latencies is not None:
+            X = shift_epochs(X, -self._latencies(X, latencies))
         return np.einsum("np,knt,tp->kp", self.filters_, X, self.temporal_filters_)
 
-    def denoise(self, X, components=None, mode="bilinear"):
+    def denoise(self, X, components=None, mode="bilinear", latencies=None):
         """Back-project selected sources to the sensors.
 
         Parameters
@@ -195,6 +256,9 @@ class CAJD(TransformerMixin, BaseEstimator):
             'bilinear' keeps only the fixed waveform scaled by the
             single-trial amplitude (paper eq. 13); 'spatial' keeps the full
             filtered time course of each source (xDAWN-like).
+        latencies : array-like of int or None
+            Single-trial latencies for the bilinear reconstruction, which is
+            then delayed by them. Default: estimated if ``max_shift > 0``.
 
         Returns
         -------
@@ -204,8 +268,11 @@ class CAJD(TransformerMixin, BaseEstimator):
         comps = np.atleast_1d(0 if components is None else components)
         Ap = self.patterns_[:, comps]
         if mode == "bilinear":
-            a = self.amplitudes(X)[:, comps]
-            return np.einsum("nc,kc,ct->knt", Ap, a, self.temporal_patterns_[comps])
+            lat = (self._latencies(X, latencies) if self.max_shift or latencies is not None
+                   else np.zeros(len(X), int))
+            a = self.amplitudes(X, lat)[:, comps]
+            Xh = np.einsum("nc,kc,ct->knt", Ap, a, self.temporal_patterns_[comps])
+            return shift_epochs(Xh, lat) if lat.any() else Xh
         if mode == "spatial":
             s = self.transform(X)[:, comps]
             return np.einsum("nc,kct->knt", Ap, s)
@@ -217,12 +284,15 @@ class BAJD(CAJD):
 
     def __init__(self, n_components=None, bilinear="averages", n_averages=20,
                  average_size=None, init="svd", max_iter=100, tol=1e-9,
-                 reduce_time=True, random_state=None):
+                 reduce_time=True, max_shift=0, latency_components=1,
+                 latency_classes=None, latency_refits=2, random_state=None):
         super().__init__(n_components=n_components, alpha=0.0,
                          bilinear=bilinear, n_averages=n_averages,
                          average_size=average_size, init=init,
                          max_iter=max_iter, tol=tol, reduce_time=reduce_time,
-                         random_state=random_state)
+                         max_shift=max_shift, latency_components=latency_components,
+                         latency_classes=latency_classes,
+                         latency_refits=latency_refits, random_state=random_state)
 
 
 class AJD(CAJD):
@@ -230,8 +300,12 @@ class AJD(CAJD):
 
     def __init__(self, n_components=None, linear="cospectra+evoked", sfreq=None,
                  freqs=None, n_averages=20, average_size=None, init="svd",
-                 max_iter=100, tol=1e-9, random_state=None):
+                 max_iter=100, tol=1e-9, max_shift=0, latency_components=1,
+                 latency_classes=None, latency_refits=2, random_state=None):
         super().__init__(n_components=n_components, alpha=1.0, linear=linear,
                          sfreq=sfreq, freqs=freqs, n_averages=n_averages,
                          average_size=average_size, init=init,
-                         max_iter=max_iter, tol=tol, random_state=random_state)
+                         max_iter=max_iter, tol=tol, max_shift=max_shift,
+                         latency_components=latency_components,
+                         latency_classes=latency_classes,
+                         latency_refits=latency_refits, random_state=random_state)

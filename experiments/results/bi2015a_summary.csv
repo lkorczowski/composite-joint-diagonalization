@@ -1,0 +1,8 @@
+method,fidelity,st_snr,auc
+raw,0.919,-14.791,0.751
+xDAWN,0.73,-6.223,0.912
+AJD-cov,0.492,-17.113,0.563
+BAJD,0.689,0.036,0.843
+CAJD-cov,0.635,-6.532,0.631
+CAJD-cov spatial,0.638,-14.613,0.655
+CAJD-cov+lat,0.645,-3.279,0.75

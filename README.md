@@ -9,6 +9,7 @@ Both models share the same spatial mixing matrix `A`.
 
 > Korczowski, Bouchard, Jutten, Congedo. *Mining the Bilinear Structure of Data with Approximate Joint Diagonalization*. EUSIPCO 2016, pp. 667–671. [hal-01357245](https://hal.science/hal-01357245)
 > Original MATLAB code: [composite-joint-diagonalization-matlab](https://github.com/lkorczowski/composite-joint-diagonalization-matlab)
+> Latency correction ported from ACSTP (MATLAB): [adaptive-common-spatio-temporal-pattern-matlab](https://github.com/lkorczowski/adaptive-common-spatio-temporal-pattern-matlab)
 
 **Keywords:** EEG · ERP · P300 · BCI · blind source separation · approximate joint diagonalization · tensor / CP decomposition · single-trial ERP estimation · denoising · scikit-learn · MNE · MOABB · pyRiemann
 
@@ -56,6 +57,7 @@ pipe = make_pipeline(CAJD(n_components=4, linear="covariances"),
 | `AJD(...)` | Linear only (`alpha=1`). |
 | `gpt(X, C, B0, D0, alpha)` / `ajd_gpt` / `bajd_gpt` / `cajd_gpt` | Low-level Gauss-planar-transformation solvers on matrix sets. |
 | `svd_init(X)` | Initialization from the SVD of the average trial (paper eq. 9–10). |
+| `estimate_latencies`, `shift_epochs` | Single-trial latency estimation of ACSTP (Congedo et al., 2016): leave-one-out average, filtered cross-correlation, peak closest to zero. |
 | `cospectra`, `covariances`, `bootstrap_averages` | Build the linear and bilinear target sets. |
 | `moreau_macchi`, `snr_db`, `correlation` | Separation and ERP-quality metrics. |
 | `cajd.simulation.simulate_paper` | The paper's matrix-level simulation. |
@@ -72,6 +74,7 @@ Main options of `CAJD`:
   - `'cospectra+evoked'`.
 - **`n_components`**: number of sources P ≤ n_channels.
 - **`init`**: `'svd'` or `'identity'`.
+- **`max_shift`** (samples, default 0 = off): jitter-tolerant CAJD. Target trials are realigned on their ACSTP latency estimate, the model is refitted on the realigned epochs (`latency_refits` times), and `denoise`/`amplitudes` realign new trials and shift the bilinear reconstruction back. `latencies_` holds the training latencies.
 
 ### Differences from the MATLAB code
 
@@ -79,7 +82,7 @@ Main options of `CAJD`:
 - **Normalization:** each sweep normalizes the columns of B and D to unit norm (this doesn't change the path, but prevents drift), and the two sets are scaled to unit energy before fitting.
 - **Optional ground truth:** the true `A`/`E` are not needed. Track any metric with `callback`.
 - **P < N sources** are supported.
-- **Reduced temporal basis (`reduce_time=True`, default in the estimators).** The 2016 algorithm updates the T×P temporal unmixing D with planar shears, which crawls when T ≫ N: from the paper's initialization it can stall for thousands of sweeps. Solving D in the N-dimensional temporal subspace of the data converges to exact separation in a few hundred sweeps and is 10–16× more accurate on D under noise. `gpt(..., d_step='exact')` also replaces the γ shears by the closed-form optimum of each column of D. `reduce_time=False` reproduces the 2016 algorithm.
+- **Reduced temporal basis (`reduce_time=True`, default in the estimators).** The 2016 algorithm updates the T×P temporal unmixing D with planar shears, which crawls when T ≫ N: from the paper's initialization it can stall for thousands of sweeps. Writing D = V·D̃, with V (T×N) the N leading right singular vectors of all observations stacked and D̃ (N×N) the only unknown, converges to exact separation in a few hundred sweeps and is 10–16× more accurate on D under noise. `gpt(..., d_step='exact')` also replaces the γ shears by the closed-form optimum of each column of D. `reduce_time=False` reproduces the 2016 algorithm.
 
 ## Validation
 
