@@ -9,7 +9,7 @@ Both models share the same spatial mixing matrix `A`.
 
 > Korczowski, Bouchard, Jutten, Congedo. *Mining the Bilinear Structure of Data with Approximate Joint Diagonalization*. EUSIPCO 2016, pp. 667–671. [hal-01357245](https://hal.science/hal-01357245)
 > Original MATLAB code: [composite-joint-diagonalization-matlab](https://github.com/lkorczowski/composite-joint-diagonalization-matlab)
-> Latency correction ported from ACSTP (MATLAB): [adaptive-common-spatio-temporal-pattern-matlab](https://github.com/lkorczowski/adaptive-common-spatio-temporal-pattern-matlab)
+> Latency correction ported from ACSTP: [Python package](https://github.com/lkorczowski/adaptive-common-spatio-temporal-pattern) · [MATLAB](https://github.com/lkorczowski/adaptive-common-spatio-temporal-pattern-matlab)
 
 **Keywords:** EEG · ERP · P300 · BCI · blind source separation · approximate joint diagonalization · tensor / CP decomposition · single-trial ERP estimation · denoising · scikit-learn · MNE · MOABB · pyRiemann
 
